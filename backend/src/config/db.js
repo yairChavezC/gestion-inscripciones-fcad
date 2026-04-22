@@ -1,24 +1,23 @@
-const { Pool } = require('pg');
-require('dotenv').config(); // Carga las variables del archivo .env
+const { Pool } = require('pg'); // Esta es la librería correcta para Postgres
+require('dotenv').config();
 
-// Creamos el pool de conexiones usando las variables del .env
-const pool = mysql.createPool({
-    host: process.env.DB_HOST,
+// En Postgres usamos simplemente new Pool()
+const pool = new Pool({
     user: process.env.DB_USER,
-    password: process.env.DB_PASS,
+    host: process.env.DB_HOST,
     database: process.env.DB_NAME,
-    waitForConnections: true,
-    connectionLimit: 10
+    password: process.env.DB_PASS,
+    port: process.env.DB_PORT, // Asegurate que en el .env sea 5432
 });
 
-// Función para probar la conexión y exportar el pool
 const testConnection = async () => {
     try {
+        // SELECT NOW() es perfecto para probar la conexión en Postgres
         const res = await pool.query('SELECT NOW()');
         console.log('✅ Conexión a PostgreSQL exitosa:', res.rows[0].now);
     } catch (err) {
-        console.error('❌ Error al conectar a la base de datos:', err.stack);
-        process.exit(1); // Detiene la aplicación si la conexión falla
+        console.error('❌ Error al conectar a la base de datos:', err.message);
+        process.exit(1); 
     }
 };
 
