@@ -4,14 +4,15 @@ require('dotenv').config();
 
 const app = express();
 
-// Middlewares básicos
+// Middlewares
 app.use(cors());
-app.use(express.json()); // Para que el servidor entienda JSON
+app.use(express.json());
 
-// Ruta de prueba
-app.get('/', (req, res) => {
-    res.send('API de Sistema de Inscripciones funcionando');
-});
+// Importamos las rutas que crearemos ahora
+const dashboardRoutes = require('./src/routes/dashboardRoutes');
+
+// Usamos las rutas
+app.use('/api/dashboard', dashboardRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
