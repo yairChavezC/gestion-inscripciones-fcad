@@ -1,4 +1,4 @@
-const { Pool } = require('pg'); // Esta es la librería correcta para Postgres
+const { Pool } = require('pg'); 
 require('dotenv').config();
 
 // En Postgres usamos simplemente new Pool()
