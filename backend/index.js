@@ -14,9 +14,6 @@ app.use(express.json());
 // 2. VINCULAR las rutas al servidor 
 app.use('/api/dashboard', dashboardRoutes);
 
-// Ruta de Salud
-app.get('/api/status', async (req, res) => {
-});
 
 const PORT = process.env.PORT || 3000;
 
@@ -25,3 +22,11 @@ testConnection().then(() => {
         console.log(`🚀 Servidor en http://localhost:${PORT}`);
     });
 });
+
+
+
+
+
+const cursosRoutes = require('./src/routes/cursosroutes'); // 1. Importás las rutas
+
+app.use('/api/cursos', cursosRoutes);
