@@ -51,3 +51,11 @@
 
 .slider-control.prev { left: 20px; }
 .slider-control.next { right: 20px; }
+
+.course-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
