@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 // Importación de íconos para la representación visual de los datos del curso
 import { FiBookOpen, FiUsers, FiClock, FiMapPin, FiUser, FiArrowRight, FiPlus } from 'react-icons/fi';
 import './Cursos.css';
@@ -13,12 +13,23 @@ import { useNavigate } from 'react-router-dom';
 const Cursos = () => {
   const navigate = useNavigate();
   // Simulación de respuesta de base de datos (Estructura de objeto para cada curso)
-  const listaCursos = [
+const [listaCursos, setCursos]= useState([
     { id: 1, nombre: 'React Avanzado', depto: 'Informática', estado: 'Vigente', alumnos: 45, semanas: 12, campus: 'Campus Virtual', prof: 'Lic. Martin Vera' },
     { id: 2, nombre: 'Bases de Datos II', depto: 'Informática', estado: 'Vigente', alumnos: 32, semanas: 10, campus: 'Campus Virtual', prof: 'Ing. Ana Soria' },
     { id: 3, nombre: 'Derecho Civil I', depto: 'Derecho', estado: 'Inactivo', alumnos: 120, semanas: 16, campus: 'Campus Virtual', prof: 'Dr. Roberto Gomez' },
     { id: 4, nombre: 'Anatomía Humana', depto: 'Medicina', estado: 'Vigente', alumnos: 85, semanas: 20, campus: 'Campus Virtual', prof: 'Dra. Julia Ruiz' },
-  ];
+  ]);
+
+  //Botón suspender y activar
+  const handleSuspender = (id) => {
+    const nuevosCursos = listaCursos.map(curso => {
+      if (curso.id === id) {
+        return { ...curso, estado: curso.estado === 'Vigente' ? 'Inactivo' : 'Vigente' };
+      }
+      return curso;
+    });
+    setCursos(nuevosCursos);
+  };
 
   return (
     <div className="page-content">
@@ -85,7 +96,10 @@ const Cursos = () => {
             <div className="card-actions">
               <div className="action-links">
                 <span className="link-edit">Editar</span>
-                <span className="link-suspend">Suspender</span>
+                {/* Botón suspender y activar */}
+                <span className="link-suspend" onClick={() => handleSuspender(curso.id)}>
+                  {curso.estado === 'Vigente' ? 'Suspender' : 'Activar'}
+                </span>
               </div>
               <span className="link-view">
                 Ver Programa <FiArrowRight />
