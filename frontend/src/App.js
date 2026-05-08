@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
+import Dashboard from './pages/Dashboard';
 import Cursos from './pages/Cursos';
 import Inscripciones from './pages/Inscripciones';
 
@@ -17,6 +18,8 @@ function App() {
           <Topbar />
           
           <Routes>
+            <Route path="/" element={<Dashboard />} /> 
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/cursos" element={<Cursos />} />
             <Route path="/inscripciones" element={<Inscripciones />} />
             <Route path="*" element={<Cursos />} /> 
