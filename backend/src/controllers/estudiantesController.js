@@ -106,4 +106,81 @@ const createEstudiante = async (req, res) => {
     }
 };
 
-module.exports = { getEstudiantes, getEstudianteById, createEstudiante };
+// U - Update: Editar un estudiante existente
+const updateEstudiante = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { documento, apellido, nombres, email, fecha_nacimiento } = req.body;
+
+        // Validamos que existan los datos mínimos
+        if (!documento || !apellido || !nombres) {
+            return res.status(400).json({ mensaje: "DNI, Apellido y Nombres son obligatorios" });
+        }
+
+        const queryText = `
+            UPDATE estudiantes 
+            SET documento = $1, 
+                apellido = $2, 
+                nombres = $3, 
+                email = $4, 
+                fecha_nacimiento = $5,
+                fecha_hora_modificacion = NOW()
+            WHERE id_estudiante = $6 AND activo = 1
+            RETURNING *;
+        `;
+
+        const values = [documento, apellido, nombres, email, fecha_nacimiento, id];
+        const result = await query(queryText, values);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ mensaje: "Estudiante no encontrado o ya no está activo" });
+        }
+
+        res.json({
+            mensaje: "Estudiante actualizado con éxito",
+            estudiante: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Error al actualizar estudiante:', error.message);
+        res.status(500).json({ mensaje: "Error al actualizar el estudiante" });
+    }
+};
+
+// D - Delete: Soft Delete (Desactivar estudiante)
+const deleteEstudiante = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const queryText = `
+            UPDATE estudiantes 
+            SET activo = 0, 
+                fecha_hora_modificacion = NOW() 
+            WHERE id_estudiante = $1 AND activo = 1
+            RETURNING id_estudiante, apellido, nombres;
+        `;
+
+        const result = await query(queryText, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ mensaje: "Estudiante no encontrado o ya estaba desactivado" });
+        }
+
+        res.json({
+            mensaje: "Estudiante desactivado correctamente (Soft Delete)",
+            estudiante: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Error en Soft Delete:', error.message);
+        res.status(500).json({ mensaje: "Error al intentar eliminar el estudiante" });
+    }
+};
+
+
+
+module.exports = { 
+    getEstudiantes, 
+    getEstudianteById, 
+    createEstudiante, 
+    updateEstudiante, 
+    deleteEstudiante 
+};
