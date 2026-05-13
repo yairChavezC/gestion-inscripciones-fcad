@@ -2,11 +2,10 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'; 
 
 import './App.css';
-import Sidebar from './components/Sidebar';
-import Topbar from './components/Topbar';
 import Dashboard from './pages/Dashboard';
 import Cursos from './pages/Cursos';
 import Inscripciones from './pages/Inscripciones';
+import Login from './pages/Login'; // <-- Asegurate de que la ruta sea correcta
 import { Layout } from './components/Layout';
 
 // Componente temporal (Placeholder)
@@ -17,34 +16,52 @@ const Students = () => (
   </div>
 );
 
+// ==========================================
+// EL GUARDIA DE SEGURIDAD (Protected Route)
+// ==========================================
+const ProtectedRoute = ({ children }) => {
+  // Buscamos la "pulsera VIP" en la memoria del navegador
+  const token = localStorage.getItem('token');
+  
+  // Si no hay token, lo redirigimos al Login automáticamente
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Si hay token, lo dejamos pasar a la pantalla que pidió (children)
+  return children;
+};
+
 export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="estudiantes" element={<Students />} />
+        
+        {/* RUTA PÚBLICA: El Login va suelto, sin el Layout para que ocupe toda la pantalla */}
+        <Route path="/login" element={<Login />} />
+
+        {/* RUTAS PRIVADAS: Todo lo que está adentro del Layout ahora está protegido */}
+        <Route 
+          path="/" 
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          {/* Si alguien entra a la raíz "/", lo mandamos al dashboard */}
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          
           <Route path="dashboard" element={<Dashboard />} /> 
+          <Route path="estudiantes" element={<Students />} />
           <Route path="cursos" element={<Cursos />} />       
           <Route path="inscripciones" element={<Inscripciones />} />
         </Route>
+
+        {/* Ruta comodín: Si tipean cualquier fruta en la URL, van a la raíz */}
         <Route path="*" element={<Navigate to="/" replace />} />
+        
       </Routes>
-     
-      {/* <div className="app-layout" style={{ display: 'flex', width: '100vw', height: '100vh' }}>
-        <Sidebar />
-        <div className="main-wrapper" style={{ flex: 1, width: '100%', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-          <Topbar />
-          <Routes>
-            <Route path="/" element={<Dashboard />} /> 
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/cursos" element={<Cursos />} />
-            <Route path="/inscripciones" element={<Inscripciones />} />
-            <Route path="*" element={<Cursos />} /> 
-          </Routes>
-        </div>
-      </div> */}
     </Router>
   );
 }
-
