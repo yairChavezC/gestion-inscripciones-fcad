@@ -1,8 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const cursosController = require('../controllers/cursoscontroller.js');
+// Agregamos eliminarCurso a la importación
+const { getCursos, crearCurso, actualizarCurso, eliminarCurso } = require('../controllers/cursosController');
 
-// Definimos el endpoint: GET /api/cursos
-router.get('/', cursosController.getCursos);
+router.get('/', getCursos);
+router.post('/', crearCurso); 
+router.put('/:id', actualizarCurso); 
+router.delete('/:id', eliminarCurso); // <--- NUEVA RUTA PARA ELIMINAR
 
 module.exports = router;
