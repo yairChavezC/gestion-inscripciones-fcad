@@ -1,5 +1,72 @@
 const { query } = require('../config/db');
 
+// E - Edit: Actualizar un estudiante existente
+const updateEstudiante = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { documento, apellido, nombres, email, fecha_nacimiento } = req.body;
+
+        if (!documento || !apellido || !nombres) {
+            return res.status(400).json({ mensaje: "DNI, Apellido y Nombres son obligatorios" });
+        }
+
+        // Verificar que el documento no lo use otro estudiante activo
+        const duplicado = await query(
+            'SELECT id_estudiante FROM estudiantes WHERE documento = $1 AND activo = 1 AND id_estudiante != $2',
+            [documento, id]
+        );
+        if (duplicado.rowCount > 0) {
+            return res.status(400).json({ mensaje: "Otro estudiante activo ya tiene ese documento" });
+        }
+
+        const result = await query(
+            `UPDATE estudiantes 
+             SET documento = $1, apellido = $2, nombres = $3, email = $4, fecha_nacimiento = $5, 
+                 fecha_hora_modificacion = NOW()
+             WHERE id_estudiante = $6 AND activo = 1
+             RETURNING *`,
+            [documento, apellido, nombres, email, fecha_nacimiento, id]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ mensaje: "Estudiante no encontrado o inactivo" });
+        }
+
+        res.json({
+            mensaje: "Estudiante actualizado con éxito",
+            estudiante: result.rows[0]
+        });
+    } catch (error) {
+        console.error("Error al actualizar estudiante:", error.message);
+        res.status(500).json({ mensaje: "Error al actualizar el estudiante", detalle: error.message });
+    }
+};
+
+// D - Delete: Borrado lógico (soft delete)
+const deleteEstudiante = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const result = await query(
+            `UPDATE estudiantes 
+             SET activo = 0, fecha_hora_modificacion = NOW()
+             WHERE id_estudiante = $1 AND activo = 1
+             RETURNING id_estudiante`,
+            [id]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ mensaje: "Estudiante no encontrado o ya inactivo" });
+        }
+
+        res.json({ mensaje: "Estudiante eliminado correctamente" });
+    } catch (error) {
+        console.error("Error al eliminar estudiante:", error.message);
+        res.status(500).json({ mensaje: "Error al eliminar el estudiante" });
+    }
+};
+
+// B - Browse: Obtener todos los estudiantes con búsqueda y paginación
 const getEstudiantes = async (req, res) => {
     try {
         const { page = 1, search = '' } = req.query;
@@ -7,14 +74,13 @@ const getEstudiantes = async (req, res) => {
         const offset = (page - 1) * limit;
 
         const countRes = await query(
-            'SELECT COUNT(*) FROM estudiantes WHERE activo = 1 AND (apellido ILIKE $1 OR nombres ILIKE $1)',
+            'SELECT COUNT(*) FROM estudiantes WHERE activo = 1 AND (apellido ILIKE $1 OR nombres ILIKE $1 OR documento ILIKE $1)',
             [`%${search}%`]
         );
 
         const totalEstudiantes = parseInt(countRes.rows[0].count);
         const totalPages = Math.ceil(totalEstudiantes / limit);
 
-        // Agregamos fecha_nacimiento y mantenemos el id_estudiante
         const estudiantesRes = await query(
             `SELECT 
                 id_estudiante, 
@@ -22,10 +88,10 @@ const getEstudiantes = async (req, res) => {
                 apellido, 
                 nombres, 
                 email, 
-                fecha_nacimiento, -- Agregado
+                fecha_nacimiento,
                 activo 
              FROM estudiantes 
-             WHERE activo = 1 AND (apellido ILIKE $1 OR nombres ILIKE $1)
+             WHERE activo = 1 AND (apellido ILIKE $1 OR nombres ILIKE $1 OR documento ILIKE $1)
              ORDER BY apellido ASC 
              LIMIT $2 OFFSET $3`,
             [`%${search}%`, limit, offset]
@@ -48,7 +114,6 @@ const getEstudiantes = async (req, res) => {
 // R - Read: Obtener un solo estudiante por su ID
 const getEstudianteById = async (req, res) => {
     try {
-        // req.params.id captura el número que pongamos en la URL
         const { id } = req.params;
 
         const result = await query(
@@ -56,12 +121,10 @@ const getEstudianteById = async (req, res) => {
             [id]
         );
 
-        // Si no hay resultados, avisamos que no existe
         if (result.rows.length === 0) {
             return res.status(404).json({ mensaje: "Estudiante no encontrado o inactivo" });
         }
 
-        // Enviamos solo el primer resultado (el único que debería haber)
         res.json(result.rows[0]);
     } catch (error) {
         console.error(error.message);
@@ -78,6 +141,15 @@ const createEstudiante = async (req, res) => {
             return res.status(400).json({ mensaje: "DNI, Apellido y Nombres son obligatorios" });
         }
 
+        // Verificar que el documento no esté duplicado
+        const duplicado = await query(
+            'SELECT id_estudiante FROM estudiantes WHERE documento = $1 AND activo = 1',
+            [documento]
+        );
+        if (duplicado.rowCount > 0) {
+            return res.status(400).json({ mensaje: "Ya existe un estudiante activo con ese documento" });
+        }
+
         const queryText = `
             INSERT INTO estudiantes (
                 documento, 
@@ -86,10 +158,10 @@ const createEstudiante = async (req, res) => {
                 email, 
                 fecha_nacimiento, 
                 activo,
-                id_usuario_modificacion, -- Agregamos esta columna
-                fecha_hora_modificacion  -- Y esta también por las dudas
+                id_usuario_modificacion,
+                fecha_hora_modificacion
             )
-            VALUES ($1, $2, $3, $4, $5, 1, 1, NOW()) -- Ponemos 1 y la hora actual
+            VALUES ($1, $2, $3, $4, $5, 1, 1, NOW())
             RETURNING *;
         `;
 
@@ -101,9 +173,9 @@ const createEstudiante = async (req, res) => {
             estudiante: result.rows[0]
         });
     } catch (error) {
-        console.error("ERROR REAL:", error.message); // Esto te ayuda a ver fallos en la terminal
+        console.error("Error al crear estudiante:", error.message);
         res.status(500).json({ mensaje: "Error al crear el estudiante", detalle: error.message });
     }
 };
 
-module.exports = { getEstudiantes, getEstudianteById, createEstudiante };
+module.exports = { getEstudiantes, getEstudianteById, createEstudiante, updateEstudiante, deleteEstudiante };
