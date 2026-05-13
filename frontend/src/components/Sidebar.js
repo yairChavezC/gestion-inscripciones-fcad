@@ -29,10 +29,14 @@ const Sidebar = () => {
         <ul className="sidebar-menu">
           
           {/* Módulos en desarrollo (Pendientes de implementar sus rutas) */}
-          <li className="sidebar-item">
+          <li 
+            className={`sidebar-item ${location.pathname === '/dashboard' || location.pathname === '/' ? 'active' : ''}`} 
+            onClick={() => navigate('/dashboard')}>
             <FiGrid /> Dashboard
           </li>
-          <li className="sidebar-item">
+          <li 
+            className={`sidebar-item ${location.pathname === '/estudiantes' ? 'active' : ''}`} 
+            onClick={() => navigate('/estudiantes')}>
             <FiUsers /> Estudiantes
           </li>
           
