@@ -14,9 +14,9 @@ const testConnection = async () => {
     try {
         // SELECT NOW() es perfecto para probar la conexión en Postgres
         const res = await pool.query('SELECT NOW()');
-        console.log('✅ Conexión a PostgreSQL exitosa:', res.rows[0].now);
+        console.log('Conexión a PostgreSQL exitosa:', res.rows[0].now);
     } catch (err) {
-        console.error('❌ Error al conectar a la base de datos:', err.message);
+        console.error('Error al conectar a la base de datos:', err.message);
         process.exit(1); 
     }
 };
