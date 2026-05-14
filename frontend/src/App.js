@@ -7,14 +7,8 @@ import Cursos from './pages/Cursos';
 import Inscripciones from './pages/Inscripciones';
 import Login from './pages/Login'; // <-- Asegurate de que la ruta sea correcta
 import { Layout } from './components/Layout';
+import Estudiantes from './pages/Estudiantes';
 
-// Componente temporal (Placeholder)
-const Students = () => (
-  <div style={{ padding: '20px' }}>
-    <h2>Sección de Estudiantes (En desarrollo)</h2>
-    <p>Próximamente podrás gestionar los alumnos aquí.</p>
-  </div>
-);
 
 // ==========================================
 // EL GUARDIA DE SEGURIDAD (Protected Route)
@@ -53,7 +47,7 @@ export default function App() {
           <Route index element={<Navigate to="/dashboard" replace />} />
           
           <Route path="dashboard" element={<Dashboard />} /> 
-          <Route path="estudiantes" element={<Students />} />
+          <Route path="estudiantes" element={<Estudiantes />} />
           <Route path="cursos" element={<Cursos />} />       
           <Route path="inscripciones" element={<Inscripciones />} />
         </Route>
