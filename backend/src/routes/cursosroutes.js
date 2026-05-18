@@ -9,3 +9,4 @@ router.post('/', crearCurso);
 router.put('/:id', actualizarCurso); 
 router.delete('/:id', eliminarCurso); // <--- NUEVA RUTA PARA ELIMINAR
 
+module.exports = router;
