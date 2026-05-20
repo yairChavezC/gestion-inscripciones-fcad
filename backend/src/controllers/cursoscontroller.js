@@ -1,6 +1,6 @@
 const { query } = require('../config/db');
 
-
+// R - Read: Obtener todos los cursos (Paginados y con búsqueda)
 const getCursos = async (req, res) => {
     try {
         const limit = req.query.limit || 10;
@@ -18,7 +18,7 @@ const getCursos = async (req, res) => {
         const result = await query(sqlText, values);
 
         res.json({
-            data: result.rows,
+            cursos: cursosRes.rows,
             pagination: {
                 limit: parseInt(limit),
                 offset: parseInt(offset),
