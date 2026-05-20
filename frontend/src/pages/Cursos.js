@@ -13,12 +13,78 @@ import { useNavigate } from 'react-router-dom';
 const Cursos = () => {
   const navigate = useNavigate();
   // Simulación de respuesta de base de datos (Estructura de objeto para cada curso)
-const [listaCursos, setCursos]= useState([
+  const [listaCursos, setCursos]= useState([
     { id: 1, nombre: 'React Avanzado', depto: 'Informática', estado: 'Vigente', alumnos: 45, semanas: 12, campus: 'Campus Virtual', prof: 'Lic. Martin Vera' },
     { id: 2, nombre: 'Bases de Datos II', depto: 'Informática', estado: 'Vigente', alumnos: 32, semanas: 10, campus: 'Campus Virtual', prof: 'Ing. Ana Soria' },
     { id: 3, nombre: 'Derecho Civil I', depto: 'Derecho', estado: 'Inactivo', alumnos: 120, semanas: 16, campus: 'Campus Virtual', prof: 'Dr. Roberto Gomez' },
     { id: 4, nombre: 'Anatomía Humana', depto: 'Medicina', estado: 'Vigente', alumnos: 85, semanas: 20, campus: 'Campus Virtual', prof: 'Dra. Julia Ruiz' },
   ]);
+
+
+  // Estado para el Modal 
+  const [modal, setModal] = useState({ tipo: null, datos: null });
+
+
+  const handleEditar = (curso) => {
+    setModal({ 
+      tipo: 'editar', 
+      datos: { 
+        id_curso: curso.id, 
+        nombre: curso.nombre, 
+        descripcion: curso.descripcion, 
+        fecha_inicio: curso.fecha_inicio, 
+        cantidad_horas: curso.semanas, 
+        inscriptos_max: curso.alumnos 
+      } 
+    });
+  };
+
+  const cerrarModal = () => setModal({ tipo: null, datos: null });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setModal({
+      ...modal,
+      datos: { ...modal.datos, [name]: value }
+    });
+  };
+
+  const handleGuardar = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const respuesta = await fetch(`http://localhost:4000/api/cursos/${modal.datos.id_curso}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(modal.datos)
+      });
+
+      if (respuesta.ok) {
+        alert('Curso actualizado con éxito');
+        
+        // Actualiza la lista 
+        const nuevosCursos = listaCursos.map(c => {
+          if (c.id === modal.datos.id_curso) {
+            return { 
+              ...c, 
+              nombre: modal.datos.nombre,
+              descripcion: modal.datos.descripcion,
+              alumnos: modal.datos.inscriptos_max,
+              semanas: modal.datos.cantidad_horas
+            };
+          }
+          return c;
+        });
+        setCursos(nuevosCursos);
+        cerrarModal();
+      } else {
+        alert('Error al guardar');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('No se pudo conectar con el servidor.');
+    }
+  };
 
   //Botón suspender y activar
   const handleSuspender = (id) => {
@@ -95,7 +161,10 @@ const [listaCursos, setCursos]= useState([
             */}
             <div className="card-actions">
               <div className="action-links">
-                <span className="link-edit">Editar</span>
+                {/* El botón Editar abre el editor*/}
+                <span className="link-edit" onClick={() => handleEditar(curso)} style={{cursor: 'pointer'}}>
+                  Editar
+                </span>
                 {/* Botón suspender y activar */}
                 <span className="link-suspend" onClick={() => handleSuspender(curso.id)}>
                   {curso.estado === 'Vigente' ? 'Suspender' : 'Activar'}
@@ -109,6 +178,50 @@ const [listaCursos, setCursos]= useState([
           </div>
         ))}
       </div>
+
+      {/*VENTANA DE EDICIÓN*/}
+      {modal.tipo === 'editar' && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>Edición de curso</h3>
+              <button className="btn-close" onClick={cerrarModal}>&times;</button>
+            </div>
+
+            <form onSubmit={handleGuardar}>
+              <div className="form-group">
+                <label>Nombre:</label>
+                <input type="text" name="nombre" value={modal.datos.nombre} onChange={handleChange} required />
+              </div>
+              <div className="form-group">
+                <label>Descripción:</label>
+                <textarea name="descripcion" value={modal.datos.descripcion} onChange={handleChange} rows="3" required />
+              </div>
+              <div className="form-group">
+                <label>Inicio:</label>
+                <input type="date" name="fecha_inicio" value={modal.datos.fecha_inicio} onChange={handleChange} required />
+              </div>
+              <div className="form-group">
+                <label>Carga Horaria:</label>
+                <input type="number" name="cantidad_horas" value={modal.datos.cantidad_horas} onChange={handleChange} required />
+              </div>
+              <div className="form-group">
+                <label>Máx. Inscriptos:</label>
+                <input type="number" name="inscriptos_max" value={modal.datos.inscriptos_max} onChange={handleChange} required />
+              </div>
+              
+              <div className="modal-actions" style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+                <button type="submit" className="btn-primary" style={{ backgroundColor: '#1a73e8' }}>
+                  Guardar
+                </button>
+                <button type="button" className="btn-primary" style={{ backgroundColor: '#dc3545' }} onClick={cerrarModal}>
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
