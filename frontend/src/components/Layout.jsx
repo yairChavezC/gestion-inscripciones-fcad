@@ -15,11 +15,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import './Layout.css';
 
 // Simulacro de autenticación para que no tire error
-const useAuth = () => ({
-  user: { name: "Usuario de Prueba", role: "Admin" },
-  logout: () => console.log("Cerrando sesión..."),
-  isAuthenticated: true
-});
+const useAuth = () => {
+  const usuarioGuardado = JSON.parse(localStorage.getItem('usuario') || '{}');
+  return {
+    user: { 
+      name: usuarioGuardado.nombre_usuario || 'Usuario', 
+      role: usuarioGuardado.apellido || 'Admin' 
+    },
+    logout: () => localStorage.clear(),
+    isAuthenticated: !!localStorage.getItem('token')
+  };
+};
 
 const SidebarLink = ({to, icon: Icon, label, collapsed})  =>  {
   return(
@@ -41,6 +47,20 @@ const SidebarLink = ({to, icon: Icon, label, collapsed})  =>  {
 export const Layout = ({children}) => {
   const { user, logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [notifAbierta, setNotifAbierta] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
+
+const handleSearch = (e) => {
+    if (e.key === 'Enter' && searchValue.trim() !== '') {
+        if (location.pathname.includes('cursos')) {
+            navigate(`/cursos?search=${searchValue}`);
+        } else {
+            navigate(`/estudiantes?search=${searchValue}`);
+        }
+        setSearchValue('');
+    }
+};
+
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -116,13 +136,37 @@ export const Layout = ({children}) => {
             {/* Search */}
             <div className="search-container">
               <Search size={18} className="search-icon"/>
-              <input type="text" placeholder="Buscar..." className="search-input"/>
+              <input 
+    type="text" 
+    placeholder="Buscar..." 
+    className="search-input"
+    value={searchValue}
+    onChange={(e) => setSearchValue(e.target.value)}
+    onKeyDown={handleSearch}
+/>
             </div>
             {/* Notifications */}
-            <button className="notification-button">
-              <Bell size={20} />
-              <span className="notification-dot"></span>
-            </button>
+            <div style={{ position: 'relative' }}>
+  <button className="notification-button" onClick={() => setNotifAbierta(!notifAbierta)}>
+    <Bell size={20} />
+    <span className="notification-dot"></span>
+  </button>
+  {notifAbierta && (
+    <div style={{
+      position: 'absolute', right: 0, top: '45px',
+      background: 'white', border: '1px solid #e0e0e0',
+      borderRadius: '8px', width: '260px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      zIndex: 1000, padding: '10px 0'
+    }}>
+      <p style={{ padding: '8px 16px', fontWeight: 600, borderBottom: '1px solid #eee', margin: 0 }}>
+        Notificaciones
+      </p>
+      <p style={{ padding: '20px 16px', color: '#888', fontSize: '14px', textAlign: 'center', margin: 0 }}>
+        No hay notificaciones nuevas.
+      </p>
+    </div>
+  )}
+</div>
             {/* User */}
             <div className="user-section">
               <div className="user-info">

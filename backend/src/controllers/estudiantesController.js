@@ -1,71 +1,5 @@
 const { query } = require('../config/db');
 
-// E - Edit: Actualizar un estudiante existente
-const updateEstudiante = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { documento, apellido, nombres, email, fecha_nacimiento } = req.body;
-
-        if (!documento || !apellido || !nombres) {
-            return res.status(400).json({ mensaje: "DNI, Apellido y Nombres son obligatorios" });
-        }
-
-        // Verificar que el documento no lo use otro estudiante activo
-        const duplicado = await query(
-            'SELECT id_estudiante FROM estudiantes WHERE documento = $1 AND activo = 1 AND id_estudiante != $2',
-            [documento, id]
-        );
-        if (duplicado.rowCount > 0) {
-            return res.status(400).json({ mensaje: "Otro estudiante activo ya tiene ese documento" });
-        }
-
-        const result = await query(
-            `UPDATE estudiantes 
-             SET documento = $1, apellido = $2, nombres = $3, email = $4, fecha_nacimiento = $5, 
-                 fecha_hora_modificacion = NOW()
-             WHERE id_estudiante = $6 AND activo = 1
-             RETURNING *`,
-            [documento, apellido, nombres, email, fecha_nacimiento, id]
-        );
-
-        if (result.rowCount === 0) {
-            return res.status(404).json({ mensaje: "Estudiante no encontrado o inactivo" });
-        }
-
-        res.json({
-            mensaje: "Estudiante actualizado con éxito",
-            estudiante: result.rows[0]
-        });
-    } catch (error) {
-        console.error("Error al actualizar estudiante:", error.message);
-        res.status(500).json({ mensaje: "Error al actualizar el estudiante", detalle: error.message });
-    }
-};
-
-// D - Delete: Borrado lógico (soft delete)
-const deleteEstudiante = async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        const result = await query(
-            `UPDATE estudiantes 
-             SET activo = 0, fecha_hora_modificacion = NOW()
-             WHERE id_estudiante = $1 AND activo = 1
-             RETURNING id_estudiante`,
-            [id]
-        );
-
-        if (result.rowCount === 0) {
-            return res.status(404).json({ mensaje: "Estudiante no encontrado o ya inactivo" });
-        }
-
-        res.json({ mensaje: "Estudiante eliminado correctamente" });
-    } catch (error) {
-        console.error("Error al eliminar estudiante:", error.message);
-        res.status(500).json({ mensaje: "Error al eliminar el estudiante" });
-    }
-};
-
 // B - Browse: Obtener todos los estudiantes con búsqueda y paginación
 const getEstudiantes = async (req, res) => {
     try {
@@ -82,14 +16,7 @@ const getEstudiantes = async (req, res) => {
         const totalPages = Math.ceil(totalEstudiantes / limit);
 
         const estudiantesRes = await query(
-            `SELECT 
-                id_estudiante, 
-                documento, 
-                apellido, 
-                nombres, 
-                email, 
-                fecha_nacimiento,
-                activo 
+            `SELECT id_estudiante, documento, apellido, nombres, email, fecha_nacimiento, activo 
              FROM estudiantes 
              WHERE activo = 1 AND (apellido ILIKE $1 OR nombres ILIKE $1 OR documento ILIKE $1)
              ORDER BY apellido ASC 
@@ -99,11 +26,7 @@ const getEstudiantes = async (req, res) => {
 
         res.json({
             estudiantes: estudiantesRes.rows,
-            pagination: {
-                totalEstudiantes,
-                totalPages,
-                currentPage: parseInt(page)
-            }
+            pagination: { totalEstudiantes, totalPages, currentPage: parseInt(page) }
         });
     } catch (error) {
         console.error('Error al obtener estudiantes:', error.message);
@@ -115,16 +38,13 @@ const getEstudiantes = async (req, res) => {
 const getEstudianteById = async (req, res) => {
     try {
         const { id } = req.params;
-
         const result = await query(
             'SELECT * FROM estudiantes WHERE id_estudiante = $1 AND activo = 1',
             [id]
         );
-
         if (result.rows.length === 0) {
             return res.status(404).json({ mensaje: "Estudiante no encontrado o inactivo" });
         }
-
         res.json(result.rows[0]);
     } catch (error) {
         console.error(error.message);
@@ -141,7 +61,6 @@ const createEstudiante = async (req, res) => {
             return res.status(400).json({ mensaje: "DNI, Apellido y Nombres son obligatorios" });
         }
 
-        // Verificar que el documento no esté duplicado
         const duplicado = await query(
             'SELECT id_estudiante FROM estudiantes WHERE documento = $1 AND activo = 1',
             [documento]
@@ -150,109 +69,75 @@ const createEstudiante = async (req, res) => {
             return res.status(400).json({ mensaje: "Ya existe un estudiante activo con ese documento" });
         }
 
-        const queryText = `
-            INSERT INTO estudiantes (
-                documento, 
-                apellido, 
-                nombres, 
-                email, 
-                fecha_nacimiento, 
-                activo,
-                id_usuario_modificacion,
-                fecha_hora_modificacion
-            )
-            VALUES ($1, $2, $3, $4, $5, 1, 1, NOW())
-            RETURNING *;
-        `;
+        const result = await query(
+            `INSERT INTO estudiantes (documento, apellido, nombres, email, fecha_nacimiento, activo, id_usuario_modificacion, fecha_hora_modificacion)
+             VALUES ($1, $2, $3, $4, $5, 1, 1, NOW()) RETURNING *`,
+            [documento, apellido, nombres, email, fecha_nacimiento]
+        );
 
-        const values = [documento, apellido, nombres, email, fecha_nacimiento];
-        const result = await query(queryText, values);
-
-        res.status(201).json({
-            mensaje: "Estudiante creado con éxito",
-            estudiante: result.rows[0]
-        });
+        res.status(201).json({ mensaje: "Estudiante creado con éxito", estudiante: result.rows[0] });
     } catch (error) {
         console.error("Error al crear estudiante:", error.message);
         res.status(500).json({ mensaje: "Error al crear el estudiante", detalle: error.message });
     }
 };
 
-// U - Update: Editar un estudiante existente
+// E - Edit: Actualizar un estudiante existente
 const updateEstudiante = async (req, res) => {
     try {
         const { id } = req.params;
         const { documento, apellido, nombres, email, fecha_nacimiento } = req.body;
 
-        // Validamos que existan los datos mínimos
         if (!documento || !apellido || !nombres) {
             return res.status(400).json({ mensaje: "DNI, Apellido y Nombres son obligatorios" });
         }
 
-        const queryText = `
-            UPDATE estudiantes 
-            SET documento = $1, 
-                apellido = $2, 
-                nombres = $3, 
-                email = $4, 
-                fecha_nacimiento = $5,
-                fecha_hora_modificacion = NOW()
-            WHERE id_estudiante = $6 AND activo = 1
-            RETURNING *;
-        `;
-
-        const values = [documento, apellido, nombres, email, fecha_nacimiento, id];
-        const result = await query(queryText, values);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ mensaje: "Estudiante no encontrado o ya no está activo" });
+        const duplicado = await query(
+            'SELECT id_estudiante FROM estudiantes WHERE documento = $1 AND activo = 1 AND id_estudiante != $2',
+            [documento, id]
+        );
+        if (duplicado.rowCount > 0) {
+            return res.status(400).json({ mensaje: "Otro estudiante activo ya tiene ese documento" });
         }
 
-        res.json({
-            mensaje: "Estudiante actualizado con éxito",
-            estudiante: result.rows[0]
-        });
+        const result = await query(
+            `UPDATE estudiantes 
+             SET documento = $1, apellido = $2, nombres = $3, email = $4, fecha_nacimiento = $5, fecha_hora_modificacion = NOW()
+             WHERE id_estudiante = $6 AND activo = 1 RETURNING *`,
+            [documento, apellido, nombres, email, fecha_nacimiento, id]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ mensaje: "Estudiante no encontrado o inactivo" });
+        }
+
+        res.json({ mensaje: "Estudiante actualizado con éxito", estudiante: result.rows[0] });
     } catch (error) {
-        console.error('Error al actualizar estudiante:', error.message);
-        res.status(500).json({ mensaje: "Error al actualizar el estudiante" });
+        console.error("Error al actualizar estudiante:", error.message);
+        res.status(500).json({ mensaje: "Error al actualizar el estudiante", detalle: error.message });
     }
 };
 
-// D - Delete: Soft Delete (Desactivar estudiante)
+// D - Delete: Borrado lógico (soft delete)
 const deleteEstudiante = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const queryText = `
-            UPDATE estudiantes 
-            SET activo = 0, 
-                fecha_hora_modificacion = NOW() 
-            WHERE id_estudiante = $1 AND activo = 1
-            RETURNING id_estudiante, apellido, nombres;
-        `;
+        const result = await query(
+            `UPDATE estudiantes SET activo = 0, fecha_hora_modificacion = NOW()
+             WHERE id_estudiante = $1 AND activo = 1 RETURNING id_estudiante`,
+            [id]
+        );
 
-        const result = await query(queryText, [id]);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ mensaje: "Estudiante no encontrado o ya estaba desactivado" });
+        if (result.rowCount === 0) {
+            return res.status(404).json({ mensaje: "Estudiante no encontrado o ya inactivo" });
         }
 
-        res.json({
-            mensaje: "Estudiante desactivado correctamente (Soft Delete)",
-            estudiante: result.rows[0]
-        });
+        res.json({ mensaje: "Estudiante eliminado correctamente" });
     } catch (error) {
-        console.error('Error en Soft Delete:', error.message);
-        res.status(500).json({ mensaje: "Error al intentar eliminar el estudiante" });
+        console.error("Error al eliminar estudiante:", error.message);
+        res.status(500).json({ mensaje: "Error al eliminar el estudiante" });
     }
 };
 
-
-
-module.exports = { 
-    getEstudiantes, 
-    getEstudianteById, 
-    createEstudiante, 
-    updateEstudiante, 
-    deleteEstudiante 
-};
+module.exports = { getEstudiantes, getEstudianteById, createEstudiante, updateEstudiante, deleteEstudiante };
