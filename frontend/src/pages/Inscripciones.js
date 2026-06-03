@@ -17,7 +17,7 @@ const Inscripciones = () => {
         const respuesta = await fetch('http://localhost:4000/api/cursos');
         if (!respuesta.ok) throw new Error('Error en la respuesta del servidor');
         const json = await respuesta.json();
-        setCursosDisponibles(json.data);
+        setCursosDisponibles(json.cursos || []);
       } catch (error) {
         console.error('Error al conectar con la base de datos:', error);
       } finally {
