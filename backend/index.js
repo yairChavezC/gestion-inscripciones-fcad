@@ -1,13 +1,12 @@
-const express = require('express');
-const cors = require('cors');
-const { testConnection, query } = require('./src/config/db');
-require('dotenv').config();
+import express from 'express';
+import cors from 'cors';
+import { testConnection } from './src/config/db.js';
 
-// 1. IMPORTAR TODAS LAS RUTAS ACÁ ARRIBA
-const dashboardRoutes = require('./src/routes/dashboardRoutes');
-const estudiantesRoutes = require('./src/routes/estudiantesRoutes');
-const cursosRoutes = require('./src/routes/cursosroutes'); 
-const authRoutes = require('./src/routes/authRoutes'); 
+// 1. IMPORTAR TODAS LAS RUTAS ACÁ ARRIBA (Agregando siempre la extensión .js)
+import dashboardRoutes from './src/routes/dashboardRoutes.js';
+import estudiantesRoutes from './src/routes/estudiantesRoutes.js';
+import cursosRoutes from './src/routes/cursosroutes.js'; 
+import authRoutes from './src/routes/authRoutes.js'; 
 
 const app = express();
 
@@ -17,10 +16,10 @@ app.use(express.json());
 // 2. VINCULAR LAS RUTAS AL SERVIDOR (Siempre antes del listen)
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/estudiantes', estudiantesRoutes);
-app.use('/api/cursos', cursosRoutes); // 
+app.use('/api/cursos', cursosRoutes); 
 app.use('/api/auth', authRoutes);
 
-// Usamos el puerto de tu archivo .env (que sabemos que es el 4000)
+// Usamos el puerto de tu archivo .env
 const PORT = process.env.PORT || 4000;
 
 // 3. PRENDER EL SERVIDOR
