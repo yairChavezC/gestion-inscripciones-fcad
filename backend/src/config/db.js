@@ -1,18 +1,17 @@
-const { Pool } = require('pg'); 
-require('dotenv').config();
+import pkg from 'pg';
+const { Pool } = pkg;
 
-// En Postgres usamos simplemente new Pool()
+// Ya no necesitamos dotenv aquí, porque usamos --env-file en el package.json
 const pool = new Pool({
     user: process.env.DB_USER,
     host: process.env.DB_HOST,
     database: process.env.DB_NAME,
     password: process.env.DB_PASS,
-    port: process.env.DB_PORT, // Asegurate que en el .env sea 5432
+    port: process.env.DB_PORT,
 });
 
-const testConnection = async () => {
+export const testConnection = async () => {
     try {
-        // SELECT NOW() es perfecto para probar la conexión en Postgres
         const res = await pool.query('SELECT NOW()');
         console.log('Conexión a PostgreSQL exitosa:', res.rows[0].now);
     } catch (err) {
@@ -21,7 +20,5 @@ const testConnection = async () => {
     }
 };
 
-module.exports = {
-    query: (text, params) => pool.query(text, params),
-    testConnection,
-};
+// Exportamos de forma moderna
+export const query = (text, params) => pool.query(text, params);
