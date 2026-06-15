@@ -1,12 +1,18 @@
-const express = require('express');
-const router = express.Router();
-// Agregamos eliminarCurso a la importación
-const { getCursos, getCursoId,crearCurso, actualizarCurso, eliminarCurso } = require('../controllers/cursoscontroller');
+import { Router } from 'express';
+import { 
+    getCursos, 
+    getCursoId, 
+    crearCurso, 
+    actualizarCurso, 
+    eliminarCurso 
+} from '../controllers/cursoscontroller.js';
+
+const router = Router();
 
 router.get('/', getCursos);
-router.get('/:id', getCursoId); //También nueva ruta
+router.get('/:id', getCursoId); 
 router.post('/', crearCurso); 
 router.put('/:id', actualizarCurso); 
-router.delete('/:id', eliminarCurso); // <--- NUEVA RUTA PARA ELIMINAR
+router.delete('/:id', eliminarCurso); 
 
-module.exports = router;
+export default router;

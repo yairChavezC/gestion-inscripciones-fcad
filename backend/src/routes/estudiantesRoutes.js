@@ -1,25 +1,20 @@
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+import { 
+    getEstudiantes, 
+    getEstudianteById, 
+    createEstudiante, 
+    updateEstudiante, 
+    deleteEstudiante 
+} from '../controllers/estudiantesController.js';
 
-const { 
-        getEstudiantes, 
-        getEstudianteById, 
-        createEstudiante, 
-        updateEstudiante, 
-        deleteEstudiante 
-    } = require('../controllers/estudiantesController');
-
-
-// La ruta será GET /api/estudiantes
+const router = Router();
 
 router.get('/', getEstudiantes);
 router.get('/:id', getEstudianteById);
 router.post('/', createEstudiante);
-router.put('/:id', updateEstudiante);       // Para editar
+router.put('/:id', updateEstudiante);       
 router.delete('/:id', deleteEstudiante);
 
-
-module.exports = router;
-
+export default router;
 
 

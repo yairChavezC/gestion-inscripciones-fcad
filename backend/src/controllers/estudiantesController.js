@@ -1,7 +1,7 @@
-const { query } = require('../config/db');
+import { query } from '../config/db.js';
 
 // B - Browse: Obtener todos los estudiantes con búsqueda y paginación
-const getEstudiantes = async (req, res) => {
+export const getEstudiantes = async (req, res) => {
     try {
         const { page = 1, search = '' } = req.query;
         const limit = 10;
@@ -35,7 +35,7 @@ const getEstudiantes = async (req, res) => {
 };
 
 // R - Read: Obtener un solo estudiante por su ID
-const getEstudianteById = async (req, res) => {
+export const getEstudianteById = async (req, res) => {
     try {
         const { id } = req.params;
         const result = await query(
@@ -53,7 +53,7 @@ const getEstudianteById = async (req, res) => {
 };
 
 // A - Add: Crear un nuevo estudiante
-const createEstudiante = async (req, res) => {
+export const createEstudiante = async (req, res) => {
     try {
         const { documento, apellido, nombres, email, fecha_nacimiento } = req.body;
 
@@ -83,7 +83,7 @@ const createEstudiante = async (req, res) => {
 };
 
 // E - Edit: Actualizar un estudiante existente
-const updateEstudiante = async (req, res) => {
+export const updateEstudiante = async (req, res) => {
     try {
         const { id } = req.params;
         const { documento, apellido, nombres, email, fecha_nacimiento } = req.body;
@@ -119,7 +119,7 @@ const updateEstudiante = async (req, res) => {
 };
 
 // D - Delete: Borrado lógico (soft delete)
-const deleteEstudiante = async (req, res) => {
+export const deleteEstudiante = async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -139,5 +139,3 @@ const deleteEstudiante = async (req, res) => {
         res.status(500).json({ mensaje: "Error al eliminar el estudiante" });
     }
 };
-
-module.exports = { getEstudiantes, getEstudianteById, createEstudiante, updateEstudiante, deleteEstudiante };

@@ -1,6 +1,6 @@
-const { query } = require('../config/db');
+import { query } from '../config/db.js'; 
 
-const getResumen = async (req, res) => {
+export const getResumen = async (req, res) => { 
     try {
         // Cambiamos 'true' por '1' porque la columna es numérica (smallint)
         const estudiantesRes = await query('SELECT COUNT(*) FROM estudiantes WHERE activo = 1');
@@ -17,5 +17,3 @@ const getResumen = async (req, res) => {
         res.status(500).json({ mensaje: "Error al obtener totales" });
     }
 };
-
-module.exports = { getResumen };

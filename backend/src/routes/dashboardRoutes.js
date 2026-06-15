@@ -1,7 +1,8 @@
-const express = require('express');
-const router = express.Router();
-const dashboardController = require('../controllers/dashboardController');
+import { Router } from 'express';
+import { getResumen } from '../controllers/dashboardController.js';
 
-router.get('/resumen', dashboardController.getResumen);
+const router = Router();
 
-module.exports = router;
+router.get('/resumen', getResumen); 
+
+export default router;
