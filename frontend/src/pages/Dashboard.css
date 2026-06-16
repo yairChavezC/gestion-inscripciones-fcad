@@ -55,7 +55,30 @@
 .course-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
+
 .course-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 768px) {
+    .slider-container-react {
+        height: 250px;
+        margin-bottom: 20px;
+    }
+
+    .course-card {
+        min-width: 100% !important;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .page-title-group h1 {
+        font-size: 20px !important;
+    }
+
+    .course-card div {
+        align-items: center;
+        justify-content: center;
+    }
 }
