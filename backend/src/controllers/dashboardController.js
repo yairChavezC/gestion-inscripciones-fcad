@@ -1,19 +1,14 @@
-import { query } from '../config/db.js'; 
+import * as dashboardService from '../services/dashboardService.js';
 
 export const getResumen = async (req, res) => { 
     try {
-        // Cambiamos 'true' por '1' porque la columna es numérica (smallint)
-        const estudiantesRes = await query('SELECT COUNT(*) FROM estudiantes WHERE activo = 1');
+        // El controlador ya no sabe nada de SQL, solo delega al servicio
+        const resumen = await dashboardService.obtenerResumenDashboard();
         
-        // El id_curso_estado ya es un número, así que este debería estar bien
-        const cursosRes = await query('SELECT COUNT(*) FROM cursos WHERE id_curso_estado = 1');
-
-        res.json({
-            totalEstudiantes: parseInt(estudiantesRes.rows[0].count),
-            totalCursos: parseInt(cursosRes.rows[0].count)
-        });
+        // Envia la respuesta al frontend
+        res.json(resumen);
     } catch (error) {
-        console.error("DETALLE DEL ERROR:", error.message);
-        res.status(500).json({ mensaje: "Error al obtener totales" });
+        console.error("Error en dashboardController:", error.message);
+        res.status(500).json({ error: "Error interno al obtener datos del dashboard" });
     }
 };
