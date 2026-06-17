@@ -1,11 +1,10 @@
 import * as cursoRepository from '../repositories/cursoRepository.js';
 
-// Agregamos search con un valor por defecto vacío ('') por si el usuario no busca nada
+// Devuelve el listado de cursos formateado con los datos de paginación y búsqueda
 export const listarCursos = async (limit, offset, search = '') => {
     const limitNum = limit || 10;
     const offsetNum = offset || 0;
     
-    // Pasamos el search al repositorio
     const { rows, count } = await cursoRepository.obtenerCursos(limitNum, offsetNum, search);
     
     return {
@@ -18,6 +17,7 @@ export const listarCursos = async (limit, offset, search = '') => {
     };
 };
 
+// Busca un curso por ID y lanza un error si no existe
 export const obtenerDetalleCurso = async (id) => {
     const curso = await cursoRepository.obtenerCursoPorId(id);
     if (!curso) {
@@ -26,7 +26,7 @@ export const obtenerDetalleCurso = async (id) => {
     return curso;
 };
 
-// AGREGADO: Recibe id_usuario
+// Valida que estén todos los datos requeridos antes de mandar a crear el curso
 export const registrarCurso = async (cursoData, id_usuario) => {
     const { nombre, descripcion, fecha_inicio, cantidad_horas, inscriptos_max } = cursoData;
     
@@ -34,11 +34,10 @@ export const registrarCurso = async (cursoData, id_usuario) => {
         throw new Error('VALIDATION_ERROR');
     }
     
-    // AGREGADO: Pasa id_usuario al Repositorio
     return await cursoRepository.insertarCurso(cursoData, id_usuario);
 };
 
-// AGREGADO: Recibe id_usuario
+// Verifica que la información esté completa antes de actualizar un curso existente
 export const actualizarDatosCurso = async (id, cursoData, id_usuario) => {
     const { nombre, descripcion, fecha_inicio, cantidad_horas, inscriptos_max } = cursoData;
     
@@ -46,7 +45,6 @@ export const actualizarDatosCurso = async (id, cursoData, id_usuario) => {
         throw new Error('VALIDATION_ERROR');
     }
     
-    // AGREGADO: Pasa id_usuario al Repositorio
     const cursoActualizado = await cursoRepository.modificarCursoDB(id, cursoData, id_usuario);
     if (!cursoActualizado) {
         throw new Error('NOT_FOUND');
@@ -55,9 +53,8 @@ export const actualizarDatosCurso = async (id, cursoData, id_usuario) => {
     return cursoActualizado;
 };
 
-// AGREGADO: Recibe id_usuario
+// Ejecuta la baja lógica del curso y confirma si se realizó con éxito
 export const darDeBajaCurso = async (id, id_usuario) => {
-    // AGREGADO: Pasa id_usuario al Repositorio
     const fueEliminado = await cursoRepository.eliminarCursoDB(id, id_usuario);
     if (!fueEliminado) {
         throw new Error('NOT_FOUND');

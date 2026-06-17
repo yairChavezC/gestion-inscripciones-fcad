@@ -1,17 +1,12 @@
 import jwt from 'jsonwebtoken';
 
-/**
- * Middleware: verificarToken
- * Se ejecuta en el pipeline antes de llegar a los controladores protegidos.
- */
+// Middleware para interceptar peticiones y validar que el usuario esté logueado
 export const verificarToken = (req, res, next) => {
-    // 1. Buscamos el encabezado 'Authorization' en la solicitud HTTP
+    // Extraemos el token del encabezado 'Authorization'
     const authHeader = req.headers['authorization'];
-    
-    // El formato estándar es "Bearer <TOKEN>". Sacamos el string del token:
     const token = authHeader && authHeader.split(' ')[1];
 
-    // Si el cliente no mandó ningún token, le cerramos la puerta de una
+    // Si no se envió ningún token, rechazamos el acceso
     if (!token) {
         return res.status(401).json({ 
             error: 'Acceso denegado. Se requiere un token de autenticación.' 
@@ -19,19 +14,17 @@ export const verificarToken = (req, res, next) => {
     }
 
     try {
-        // 2. Verificamos la veracidad y vigencia de la firma usando la clave secreta
-        // Si el token expiró o la firma fue alterada, esto salta directo al catch
+        // Verificamos si el token es válido y no ha expirado usando nuestra clave secreta
         const usuarioVerificado = jwt.verify(token, process.env.JWT_SECRET);
         
-        // 3. ¡La matemática dio perfecta! 
-        // Inyectamos los datos decodificados del usuario (id, nombre) adentro del objeto 'req'
+        // Guardamos los datos decodificados del usuario en la request para que los usen los controladores
         req.usuario = usuarioVerificado;
         
-        // 4. Le damos el pase al siguiente eslabón del pipeline (el controlador correspondiente)
+        // Damos paso a la ejecución de la ruta solicitada
         next();
         
     } catch (error) {
-        // Si falló jwt.verify (token vencido, firma falsa, palabra secreta incorrecta)
+        // Atrapamos errores si el token fue adulterado o ya se venció
         return res.status(403).json({ 
             error: 'Token inválido o expirado. Acceso prohibido.' 
         });

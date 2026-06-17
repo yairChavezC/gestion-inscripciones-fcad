@@ -1,11 +1,10 @@
 import { query } from '../config/db.js';
 
-// 1. AGREGADO: Parámetro search y conteo total
+// Obtiene la lista de cursos activos aplicando paginación y filtro de búsqueda por nombre. 
+// Devuelve también el total de registros para armar el paginador en el frontend.
 export const obtenerCursos = async (limit, offset, search = '') => {
-    // Le agregamos los % para que funcione como un buscador "contiene"
     const searchParam = `%${search}%`;
     
-    // Consulta principal: Agregamos el ILIKE $3
     const sqlText = `
         SELECT c.*, ce.descripcion as estado_nombre 
         FROM cursos c 
@@ -16,7 +15,6 @@ export const obtenerCursos = async (limit, offset, search = '') => {
     `;
     const result = await query(sqlText, [limit, offset, searchParam]);
 
-    // Consulta para contar el total (necesario para que la paginación no se rompa al buscar)
     const countSql = `
         SELECT COUNT(*) 
         FROM cursos c 
@@ -31,6 +29,7 @@ export const obtenerCursos = async (limit, offset, search = '') => {
     };
 };
 
+// Busca un curso específico por su ID asegurando que esté en estado activo
 export const obtenerCursoPorId = async (id) => {
     const sqlText = `
         SELECT c.*, ce.descripcion as estado_nombre 
@@ -42,7 +41,7 @@ export const obtenerCursoPorId = async (id) => {
     return result.rows[0];
 };
 
-// 2. AGREGADO: Parámetro id_usuario para reemplazar el "1" hardcodeado
+// Crea un nuevo curso en la base de datos y registra qué usuario realizó la inserción
 export const insertarCurso = async (cursoData, id_usuario) => {
     const { nombre, descripcion, fecha_inicio, cantidad_horas, inscriptos_max } = cursoData;
     const sql = `
@@ -56,7 +55,7 @@ export const insertarCurso = async (cursoData, id_usuario) => {
     return result.rows[0];
 };
 
-// 3. AGREGADO: Registrar quién modificó el curso
+// Actualiza los datos de un curso existente y guarda el usuario que hizo la modificación
 export const modificarCursoDB = async (id, cursoData, id_usuario) => {
     const { nombre, descripcion, fecha_inicio, cantidad_horas, inscriptos_max } = cursoData;
     const sql = `
@@ -71,7 +70,7 @@ export const modificarCursoDB = async (id, cursoData, id_usuario) => {
     return result.rows[0];
 };
 
-// 4. AGREGADO: Registrar quién dio de baja el curso
+// Realiza una baja lógica del curso (cambia su estado) registrando qué usuario lo eliminó
 export const eliminarCursoDB = async (id, id_usuario) => {
     const sql = `
         UPDATE cursos 

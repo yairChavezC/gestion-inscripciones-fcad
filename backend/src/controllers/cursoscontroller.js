@@ -4,6 +4,7 @@ import Handlebars from 'handlebars';
 import puppeteer from 'puppeteer';
 import * as cursoService from '../services/cursoService.js';
 
+// Lista todos los cursos soportando paginación y búsqueda por texto
 export const getCursos = async (req, res) => {
     try {
         const { limit, offset, search } = req.query; 
@@ -15,6 +16,7 @@ export const getCursos = async (req, res) => {
     }
 };
 
+// Trae la información detallada de un solo curso por su ID
 export const getCursoId = async (req, res) => {
     try {
         const curso = await cursoService.obtenerDetalleCurso(req.params.id);
@@ -28,6 +30,7 @@ export const getCursoId = async (req, res) => {
     }
 };
 
+// Crea un curso nuevo guardando también qué usuario hizo la acción
 export const crearCurso = async (req, res) => {
     try {
         const id_usuario = req.usuario.id; 
@@ -42,6 +45,7 @@ export const crearCurso = async (req, res) => {
     }
 };
 
+// Edita los datos de un curso existente
 export const actualizarCurso = async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
@@ -59,6 +63,7 @@ export const actualizarCurso = async (req, res) => {
     }
 };
 
+// Aplica la baja lógica de un curso (no lo borra definitivamente de la BD)
 export const eliminarCurso = async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
@@ -73,40 +78,34 @@ export const eliminarCurso = async (req, res) => {
     }
 };
 
+// Renderiza la plantilla HTML con los datos reales y devuelve un archivo PDF
 export const generarDiplomaPdf = async (req, res) => {
     try {
         const idCurso = req.params.id;
-        
-        // 1. Atrapamos el nombre del alumno que viene desde el select de React en la URL (?alumno=...)
-        // Si por alguna razón llega vacío, le ponemos "Estudiante" por defecto.
         const nombreAlumno = req.query.alumno || "Estudiante";
 
-        // 2. Traemos el nombre REAL del curso desde tu base de datos para que no quede fijo
+        // Buscamos los datos del curso para inyectarlos en el diploma
         const cursoInfo = await cursoService.obtenerDetalleCurso(idCurso);
 
-        // 3. Armamos el paquete de datos inyectando las variables reales
         const datosDiploma = {
-            nombreAlumno: nombreAlumno, // El nombre que elegiste en el frontend
-            nombreCurso: cursoInfo.nombre, // El nombre del curso de la BD
+            nombreAlumno: nombreAlumno, 
+            nombreCurso: cursoInfo.nombre, 
             fechaEmision: new Date().toLocaleDateString('es-AR')
         };
 
-        // 4. Leemos el archivo HTML (.hbs)
+        // Preparamos el HTML con Handlebars
         const templatePath = path.join(process.cwd(), 'src', 'templates', 'diploma.hbs');
         const templateHtml = fs.readFileSync(templatePath, 'utf8');
 
-        // 5. Compilamos la plantilla inyectando los datos
         const template = Handlebars.compile(templateHtml);
         const htmlFinal = template(datosDiploma);
 
-        // 6. Lanzamos Puppeteer (el navegador fantasma)
+        // Levantamos el navegador invisible para imprimir el PDF
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
         
-        // Cargamos nuestro HTML en la página
         await page.setContent(htmlFinal, { waitUntil: 'networkidle0' });
 
-        // 7. Generamos el PDF (formato A4, apaisado, e imprimimos fondos CSS)
         const pdfBuffer = await page.pdf({ 
             format: 'A4', 
             landscape: true, 
@@ -115,7 +114,7 @@ export const generarDiplomaPdf = async (req, res) => {
 
         await browser.close();
 
-        // 8. Enviamos el PDF crudo al Frontend
+        // Enviamos el PDF al frontend listo para descargar
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename=diploma-${idCurso}.pdf`);
         res.send(pdfBuffer);

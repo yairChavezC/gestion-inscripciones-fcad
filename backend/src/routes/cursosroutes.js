@@ -8,21 +8,21 @@ import {
     generarDiplomaPdf 
 } from '../controllers/cursoscontroller.js';
 
-// Tu middleware de seguridad
+// Middleware de autenticación y seguridad
 import { verificarToken } from '../middlewares/verificarToken.js';
 
 const router = Router();
 
-// Rutas públicas de lectura (Si querés que solo los logueados vean el catálogo, agregales el verificarToken también)
+// Rutas públicas de lectura (catálogo y detalles)
 router.get('/', getCursos);
 router.get('/:id', getCursoId); 
 
-// RUTAS PROTEGIDAS: Ahora sí, el middleware intercepta la petición y arma el req.usuario
+// Rutas protegidas (requieren autenticación para crear, editar o eliminar datos)
 router.post('/', verificarToken, crearCurso); 
 router.put('/:id', verificarToken, actualizarCurso); 
 router.delete('/:id', verificarToken, eliminarCurso); 
 
-// TU NUEVA RUTA PARA EL PDF
+// Ruta protegida para la generación y descarga de diplomas PDF
 router.get('/diploma/:id', verificarToken, generarDiplomaPdf);
 
 export default router;

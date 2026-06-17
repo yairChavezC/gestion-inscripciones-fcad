@@ -6,21 +6,21 @@ import { useNavigate } from 'react-router-dom';
 const Cursos = () => {
   const navigate = useNavigate();
   
-  // --- ESTADOS PRINCIPALES ---
+  // Estados para almacenar los datos principales de la pantalla
   const [listaCursos, setCursos] = useState([]);
   const [modal, setModal] = useState({ tipo: null, datos: null });
   
-  // --- ESTADOS PARA PAGINACIÓN Y BÚSQUEDA ---
+  // Estados para gestionar la paginación y la barra de búsqueda
   const [busqueda, setBusqueda] = useState('');
   const [paginaActual, setPaginaActual] = useState(0); 
   const [totalRegistros, setTotalRegistros] = useState(0);
   const limite = 4; 
 
-  // --- ESTADOS PARA EL DIPLOMA ---
+  // Estados específicos para el flujo de emisión de diplomas
   const [listaEstudiantes, setListaEstudiantes] = useState([]);
   const [modalDiploma, setModalDiploma] = useState({ visible: false, idCurso: null, nombreAlumno: '' });
 
-  // --- CARGA DE CURSOS ---
+  // Obtiene los cursos del backend aplicando el límite de paginación y el filtro de búsqueda
   const cargarCursos = async () => {
     try {
       const offset = paginaActual * limite;
@@ -42,11 +42,12 @@ const Cursos = () => {
     }
   };
 
+  // Recarga la lista automáticamente cada vez que el usuario cambia de página
   useEffect(() => {
     cargarCursos();
   }, [paginaActual]); 
 
-  // --- MANEJO DEL MODAL PRINCIPAL (Cursos) ---
+  // Funciones auxiliares para el manejo de los modales de ABM (Alta, Baja, Modificación)
   const cerrarModal = () => setModal({ tipo: null, datos: null });
 
   const handleChange = (e) => {
@@ -57,6 +58,7 @@ const Cursos = () => {
     });
   };
 
+  // Prepara el formulario vacío para registrar un nuevo curso
   const handleCrearModal = () => {
     setModal({
       tipo: 'crear',
@@ -64,8 +66,10 @@ const Cursos = () => {
     });
   };
 
+  // Abre el modal en modo de solo lectura para ver los detalles
   const handleDetalles = (curso) => setModal({ tipo: 'detalles', datos: curso });
 
+  // Carga los datos del curso seleccionado en el formulario para poder editarlos
   const handleEditar = (curso) => {
     setModal({ 
       tipo: 'editar', 
@@ -80,6 +84,7 @@ const Cursos = () => {
     });
   };
 
+  // Envía la petición para dar de baja un curso (Soft Delete) previa confirmación
   const handleEliminar = async (id_curso) => {
     if (!window.confirm("¿Estás seguro de que deseas dar de baja este curso?")) return;
     try {
@@ -98,6 +103,7 @@ const Cursos = () => {
     }
   };
 
+  // Función unificada que decide si hacer un POST (crear) o PUT (editar) según el estado del modal
   const handleGuardar = async (e) => {
     e.preventDefault();
     const esCreacion = modal.tipo === 'crear';
@@ -127,7 +133,7 @@ const Cursos = () => {
     }
   };
 
-  // --- LÓGICA DEL DIPLOMA ---
+  // Trae la lista completa de estudiantes para poblar el menú desplegable del diploma
   const cargarEstudiantes = async () => {
     try {
       const res = await fetch(`http://localhost:4000/api/estudiantes?limit=1000`, {
@@ -142,6 +148,7 @@ const Cursos = () => {
     }
   };
 
+  // Muestra la ventana para elegir alumno; si la lista está vacía, va a buscarla al backend
   const abrirModalDiploma = (id_curso) => {
     setModalDiploma({ visible: true, idCurso: id_curso, nombreAlumno: '' });
     if (listaEstudiantes.length === 0) {
@@ -149,6 +156,7 @@ const Cursos = () => {
     }
   };
 
+  // Solicita el PDF al backend combinando el curso actual y el alumno seleccionado, y fuerza su descarga
   const descargarDiplomaReal = async (e) => {
     e.preventDefault();
     try {
@@ -181,7 +189,6 @@ const Cursos = () => {
     }
   };
 
-  // --- RENDER DEL COMPONENTE ---
   return (
     <div className="page-content">
       
@@ -230,7 +237,6 @@ const Cursos = () => {
               <button className="btn-action btn-detalles" onClick={() => handleDetalles(curso)} title="Ver Detalles"><FiEye /></button>
               <button className="btn-action btn-editar" onClick={() => handleEditar(curso)} title="Editar Curso"><FiEdit /></button>
               <button className="btn-action btn-baja" onClick={() => handleEliminar(curso.id_curso)} title="Dar de Baja"><FiTrash2 /></button>
-              {/* ACÁ ENLAZAMOS EL BOTÓN AL NUEVO MODAL */}
               <button className="btn-action btn-diploma" onClick={() => abrirModalDiploma(curso.id_curso)} title="Generar Diploma"><FiAward /></button>
             </div>
           </div>
@@ -243,7 +249,6 @@ const Cursos = () => {
         <button disabled={(paginaActual + 1) * limite >= totalRegistros} onClick={() => setPaginaActual(paginaActual + 1)} style={{ padding: '8px 15px', cursor: (paginaActual + 1) * limite >= totalRegistros ? 'not-allowed' : 'pointer', border: '1px solid #ccc', borderRadius: '4px', backgroundColor: (paginaActual + 1) * limite >= totalRegistros ? '#f5f5f5' : 'white' }}>Siguiente</button>
       </div>
 
-      {/* --- MODAL PRINCIPAL (Crear/Editar/Detalles) --- */}
       {modal.tipo && (
         <div className="modal-overlay" onClick={cerrarModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -282,7 +287,6 @@ const Cursos = () => {
         </div>
       )}
 
-      {/* --- MODAL PARA EL DIPLOMA --- */}
       {modalDiploma.visible && (
         <div className="modal-overlay" onClick={() => setModalDiploma({ visible: false, idCurso: null, nombreAlumno: '' })}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
