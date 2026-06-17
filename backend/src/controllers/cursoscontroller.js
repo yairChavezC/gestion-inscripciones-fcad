@@ -2,8 +2,11 @@ import * as cursoService from '../services/cursoService.js';
 
 export const getCursos = async (req, res) => {
     try {
-        const { limit, offset } = req.query;
-        const resultado = await cursoService.listarCursos(limit, offset);
+        // 1. Atrapamos el parámetro 'search' además del limit y offset
+        const { limit, offset, search } = req.query; 
+        
+        // 2. Se lo pasamos al servicio
+        const resultado = await cursoService.listarCursos(limit, offset, search); 
         res.json(resultado);
     } catch (error) {
         console.error('Error al obtener cursos:', error);
@@ -26,7 +29,11 @@ export const getCursoId = async (req, res) => {
 
 export const crearCurso = async (req, res) => {
     try {
-        const nuevoCurso = await cursoService.registrarCurso(req.body);
+        // AGREGADO: Capturamos quién está haciendo la acción gracias al token
+        const id_usuario = req.usuario.id_usuario; 
+        
+        // AGREGADO: Pasamos el id_usuario al servicio
+        const nuevoCurso = await cursoService.registrarCurso(req.body, id_usuario);
         res.status(201).json(nuevoCurso);
     } catch (error) {
         if (error.message === 'VALIDATION_ERROR') {
@@ -39,7 +46,11 @@ export const crearCurso = async (req, res) => {
 
 export const actualizarCurso = async (req, res) => {
     try {
-        const cursoActualizado = await cursoService.actualizarDatosCurso(req.params.id, req.body);
+        // AGREGADO: Capturamos el usuario desde el token
+        const id_usuario = req.usuario.id_usuario;
+        
+        // AGREGADO: Pasamos el id_usuario al servicio
+        const cursoActualizado = await cursoService.actualizarDatosCurso(req.params.id, req.body, id_usuario);
         res.json(cursoActualizado);
     } catch (error) {
         if (error.message === 'VALIDATION_ERROR') {
@@ -55,7 +66,11 @@ export const actualizarCurso = async (req, res) => {
 
 export const eliminarCurso = async (req, res) => {
     try {
-        await cursoService.darDeBajaCurso(req.params.id);
+        // AGREGADO: Capturamos el usuario desde el token
+        const id_usuario = req.usuario.id_usuario;
+        
+        // AGREGADO: Pasamos el id_usuario al servicio
+        await cursoService.darDeBajaCurso(req.params.id, id_usuario);
         res.json({ message: 'Curso eliminado correctamente' });
     } catch (error) {
         if (error.message === 'NOT_FOUND') {

@@ -3,7 +3,8 @@
   width: 100%;
   flex: 1;
   padding: 30px;
-  overflow-y: auto;
+  box-sizing: border-box; /* Asegura que el padding de 30px no agrande la caja de más */
+  /* overflow-y: auto; <-- ELIMINÁ ESTA LÍNEA */
   background-color: #f8f9fa;
 }
 
@@ -69,6 +70,7 @@
 }
 .badge.vigente { background-color: #e6f4ea; color: #1e8e3e; }
 .badge.inactivo { background-color: #fce8e6; color: #d93025; }
+.badge.borrador { background-color: #f1f3f4; color: #5f6368; } /* Agregado para el estado borrador de tu captura */
 
 .card-info {
   display: grid;
@@ -79,16 +81,155 @@
   margin-bottom: 10px;
 }
 
+/* --- ESTILOS PARA LOS BOTONES DE ACCIÓN (ESTILO SÓLIDO) --- */
 .card-actions {
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid #eaebec;
+  padding-top: 15px;
+  justify-content: flex-end; /* Alinea los botones a la derecha */
+}
+
+.btn-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;      /* Ancho fijo para que sean cuadrados */
+  height: 38px;     /* Alto fijo */
+  border: none;
+  border-radius: 8px; /* Bordes redondeados */
+  cursor: pointer;
+  font-size: 18px;  /* Tamaño del ícono */
+  transition: filter 0.2s ease;
+}
+
+.btn-action:hover {
+  filter: brightness(0.9); /* Oscurece un poquito al pasar el mouse */
+}
+
+/* Ojo - Detalles */
+.btn-detalles {
+  background-color: #10b981; /* Verde esmeralda */
+  color: white;
+}
+
+/* Lápiz - Editar */
+.btn-editar {
+  background-color: #fbbf24; /* Amarillo cálido */
+  color: #1c1917; /* Ícono oscuro para contraste */
+}
+
+/* Basurero - Baja */
+.btn-baja {
+  background-color: #ef4444; /* Rojo coral */
+  color: white;
+}
+
+/* Diploma */
+.btn-diploma {
+  background-color: #6366f1; /* Índigo */
+  color: white;
+}
+
+/* --- ESTILOS DEL MODAL --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4); /* Fondo oscuro más suave */
+  backdrop-filter: blur(2px); /* Efecto de desenfoque moderno */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid #eaebec;
-  padding-top: 15px;
-  font-size: 14px;
+  margin-bottom: 25px;
 }
 
-.action-links { display: flex; gap: 15px; }
-.link-edit { color: #5f6368; cursor: pointer; }
-.link-suspend { color: #d93025; cursor: pointer; }
-.link-view { color: #1a73e8; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 5px;}
+.modal-header h3 {
+  margin: 0;
+  font-size: 20px;
+  color: #202124;
+}
+
+/* Formulario */
+.form-group {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #5f6368;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 10px 12px;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #1a73e8; /* Borde azul al escribir */
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Grupo de botones del modal */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.btn-cancelar {
+  background-color: transparent;
+  color: #5f6368;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-cancelar:hover {
+  background-color: #f1f3f4;
+}
+
+/* El botón guardar ya puede usar tu clase .btn-primary que tenés arriba en el CSS */

@@ -1,5 +1,7 @@
+import 'dotenv/config';
 import pkg from 'pg';
 const { Pool } = pkg;
+
 
 // Ya no necesitamos dotenv aquí, porque usamos --env-file en el package.json
 const pool = new Pool({

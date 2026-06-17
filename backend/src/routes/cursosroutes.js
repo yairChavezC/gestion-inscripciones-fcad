@@ -7,12 +7,16 @@ import {
     eliminarCurso 
 } from '../controllers/cursoscontroller.js';
 
+// 1. Importamos el middleware (asegurate de que la ruta sea la correcta en tu proyecto)
+import { verificarToken } from '../middlewares/authMiddleware.js';
+
 const router = Router();
 
-router.get('/', getCursos);
-router.get('/:id', getCursoId); 
-router.post('/', crearCurso); 
-router.put('/:id', actualizarCurso); 
-router.delete('/:id', eliminarCurso); 
+// 2. Inyectamos verificarToken antes de llamar al controlador en cada ruta
+router.get('/', verificarToken, getCursos);
+router.get('/:id', verificarToken, getCursoId); 
+router.post('/', verificarToken, crearCurso); 
+router.put('/:id', verificarToken, actualizarCurso); 
+router.delete('/:id', verificarToken, eliminarCurso); 
 
 export default router;

@@ -1,17 +1,19 @@
 import * as cursoRepository from '../repositories/cursoRepository.js';
 
-export const listarCursos = async (limit, offset) => {
+// Agregamos search con un valor por defecto vacío ('') por si el usuario no busca nada
+export const listarCursos = async (limit, offset, search = '') => {
     const limitNum = limit || 10;
     const offsetNum = offset || 0;
     
-    const { rows, rowCount } = await cursoRepository.obtenerCursos(limitNum, offsetNum);
+    // Pasamos el search al repositorio
+    const { rows, count } = await cursoRepository.obtenerCursos(limitNum, offsetNum, search);
     
     return {
         cursos: rows,
         pagination: {
             limit: parseInt(limitNum),
             offset: parseInt(offsetNum),
-            count: rowCount 
+            count: parseInt(count) 
         }
     };
 };
@@ -24,24 +26,28 @@ export const obtenerDetalleCurso = async (id) => {
     return curso;
 };
 
-export const registrarCurso = async (cursoData) => {
+// AGREGADO: Recibe id_usuario
+export const registrarCurso = async (cursoData, id_usuario) => {
     const { nombre, descripcion, fecha_inicio, cantidad_horas, inscriptos_max } = cursoData;
     
     if (!nombre || !descripcion || !fecha_inicio || !cantidad_horas || !inscriptos_max) {
         throw new Error('VALIDATION_ERROR');
     }
     
-    return await cursoRepository.insertarCurso(cursoData);
+    // AGREGADO: Pasa id_usuario al Repositorio
+    return await cursoRepository.insertarCurso(cursoData, id_usuario);
 };
 
-export const actualizarDatosCurso = async (id, cursoData) => {
+// AGREGADO: Recibe id_usuario
+export const actualizarDatosCurso = async (id, cursoData, id_usuario) => {
     const { nombre, descripcion, fecha_inicio, cantidad_horas, inscriptos_max } = cursoData;
     
     if (!nombre || !descripcion || !fecha_inicio || !cantidad_horas || !inscriptos_max) {
         throw new Error('VALIDATION_ERROR');
     }
     
-    const cursoActualizado = await cursoRepository.modificarCursoDB(id, cursoData);
+    // AGREGADO: Pasa id_usuario al Repositorio
+    const cursoActualizado = await cursoRepository.modificarCursoDB(id, cursoData, id_usuario);
     if (!cursoActualizado) {
         throw new Error('NOT_FOUND');
     }
@@ -49,8 +55,10 @@ export const actualizarDatosCurso = async (id, cursoData) => {
     return cursoActualizado;
 };
 
-export const darDeBajaCurso = async (id) => {
-    const fueEliminado = await cursoRepository.eliminarCursoDB(id);
+// AGREGADO: Recibe id_usuario
+export const darDeBajaCurso = async (id, id_usuario) => {
+    // AGREGADO: Pasa id_usuario al Repositorio
+    const fueEliminado = await cursoRepository.eliminarCursoDB(id, id_usuario);
     if (!fueEliminado) {
         throw new Error('NOT_FOUND');
     }
