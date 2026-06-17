@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Diploma UNER</title>
+    <style>
+        /* Importamos fuentes elegantes de Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@400;600&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            /* Esta línea es MAGIA pura: obliga a Puppeteer a imprimir los colores de fondo y bordes */
+            -webkit-print-color-adjust: exact !important; 
+            print-color-adjust: exact !important;
+        }
+
+        /* Forzamos el tamaño exacto de una hoja A4 apaisada */
+        .page {
+            width: 297mm;
+            height: 210mm;
+            padding: 15mm;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Marco exterior grueso */
+        .border-outer {
+            border: 6px solid #1a365d; /* Azul oscuro formal */
+            height: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        /* Marco interior fino */
+        .border-inner {
+            border: 2px solid #1a365d;
+            height: 100%;
+            text-align: center;
+            padding: 50px 40px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background-color: #fafbfc; /* Un gris muuuy clarito de fondo */
+        }
+
+        .header {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 20px;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-family: 'Cinzel', serif;
+            font-size: 55px;
+            color: #1a365d;
+            margin: 0 0 40px 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .text {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 18px;
+            color: #4a5568;
+            margin-bottom: 15px;
+        }
+
+        .name {
+            font-family: 'Cinzel', serif;
+            font-size: 46px;
+            color: #000000;
+            border-bottom: 2px solid #cbd5e0;
+            display: inline-block;
+            padding: 0 50px 10px 50px;
+            margin-bottom: 30px;
+        }
+
+        .course {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 32px;
+            color: #2b6cb0;
+            margin-bottom: 60px;
+        }
+
+        .footer {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            color: #718096;
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 0 40px;
+        }
+
+        .signature {
+            text-align: center;
+        }
+
+        .signature-line {
+            width: 250px;
+            border-top: 1px solid #000;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="border-outer">
+            <div class="border-inner">
+                
+                <div class="header">Universidad Nacional de Entre Ríos</div>
+                <h1 class="title">Certificado de Aprobación</h1>
+                
+                <div class="text">Se otorga el presente reconocimiento académico a</div>
+                
+                <div class="name">{{nombreAlumno}}</div>
+                
+                <div class="text">Por haber cumplido con los requisitos y completado con éxito el curso de</div>
+                
+                <div class="course">"{{nombreCurso}}"</div>
+                
+                <div class="footer">
+                    <div class="date">
+                        Emitido el {{fechaEmision}}<br>
+                        Concordia, Entre Ríos
+                    </div>
+                    
+                    <div class="signature">
+                        <div class="signature-line"></div>
+                        Firma Autoridad Académica
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
